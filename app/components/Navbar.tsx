@@ -9,10 +9,6 @@ import {
   X,
   Sun,
   Moon,
-  ChevronDown,
-  UserRound,
-  LogOut,
-  Library,
 } from "lucide-react";
 
 const navLinks = [
@@ -25,14 +21,14 @@ const navLinks = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLight, setIsLight] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isLight, setIsLight] = useState(true);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("booknook-theme");
-    const lightMode = savedTheme === "light";
+    const lightMode = savedTheme !== "dark";
 
     setIsLight(lightMode);
+
     document.documentElement.setAttribute(
       "data-theme",
       lightMode ? "light" : "dark"
@@ -56,30 +52,30 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--background)]/95 backdrop-blur-xl transition-colors duration-300">
-      <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-[#e8e0d5] bg-[#faf8f3]/95 text-[#292720] backdrop-blur-md">
+      <nav className="mx-auto flex h-[84px] max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12">
         <Link href="/" className="flex shrink-0 items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-400 text-[#06131d] shadow-lg shadow-emerald-500/20">
-            <BookOpen size={24} strokeWidth={2.5} />
+          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#d8c8b5] text-[#80674e]">
+            <BookOpen size={22} strokeWidth={1.5} />
           </div>
 
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-[var(--foreground)]">
-              Book<span className="text-emerald-500">Nook</span>
+            <h1 className="font-serif text-[27px] font-semibold leading-none tracking-tight">
+              BookNook<span className="text-[#9b7958]">.</span>
             </h1>
 
-            <p className="text-[9px] font-medium tracking-[2px] text-[var(--muted)]">
-              YOUR DIGITAL LIBRARY
+            <p className="mt-1.5 text-[9px] font-medium uppercase tracking-[2.5px] text-[#827b70]">
+              A world between pages
             </p>
           </div>
         </Link>
 
-        <div className="hidden items-center gap-6 xl:flex">
+        <div className="hidden items-center gap-7 xl:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="whitespace-nowrap text-sm font-medium text-[var(--muted)] transition-colors duration-200 hover:text-emerald-500"
+              className="relative py-2 text-[13px] font-medium tracking-wide text-[#625d53] transition-colors duration-200 hover:text-[#9b7958] after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-[#9b7958] after:transition-all after:duration-300 hover:after:w-full"
             >
               {link.name}
             </Link>
@@ -92,21 +88,21 @@ export default function Navbar() {
             onClick={toggleTheme}
             aria-label={`Switch to ${isLight ? "dark" : "light"} mode`}
             title={isLight ? "Dark Mode" : "Light Mode"}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] transition hover:border-emerald-500 hover:text-emerald-500"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-[#e3dbcf] text-[#625d53] transition hover:border-[#9b7958] hover:text-[#9b7958]"
           >
-            {isLight ? <Moon size={19} /> : <Sun size={19} />}
+            {isLight ? <Moon size={17} /> : <Sun size={17} />}
           </button>
 
           <Link
             href="/login"
-            className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] transition hover:border-emerald-500 hover:text-emerald-500"
+            className="px-3 py-2 text-[13px] font-medium text-[#625d53] transition hover:text-[#9b7958]"
           >
             Login
           </Link>
 
           <Link
             href="/register"
-            className="rounded-xl bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-[#06131d] transition hover:bg-emerald-300"
+            className="border border-[#80674e] bg-[#80674e] px-5 py-3 text-[12px] font-semibold uppercase tracking-[1.5px] text-white transition hover:border-[#624c37] hover:bg-[#624c37]"
           >
             Get Started
           </Link>
@@ -117,41 +113,41 @@ export default function Navbar() {
             type="button"
             onClick={toggleTheme}
             aria-label={`Switch to ${isLight ? "dark" : "light"} mode`}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] transition hover:text-emerald-500"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-[#e3dbcf] text-[#625d53] transition hover:text-[#9b7958]"
           >
-            {isLight ? <Moon size={19} /> : <Sun size={19} />}
+            {isLight ? <Moon size={17} /> : <Sun size={17} />}
           </button>
 
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
             aria-label={isOpen ? "Close menu" : "Open menu"}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] text-[var(--foreground)]"
+            className="flex h-10 w-10 items-center justify-center border border-[#e3dbcf] text-[#292720]"
           >
-            {isOpen ? <X size={22} /> : <Menu size={22} />}
+            {isOpen ? <X size={21} /> : <Menu size={21} />}
           </button>
         </div>
       </nav>
 
       {isOpen && (
-        <div className="border-t border-[var(--border)] bg-[var(--background)] px-5 py-5 lg:hidden">
+        <div className="border-t border-[#e8e0d5] bg-[#faf8f3] px-5 py-5 lg:hidden">
           <div className="mx-auto flex max-w-7xl flex-col gap-1">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setIsOpen(false)}
-                className="rounded-xl px-4 py-3 text-sm font-medium text-[var(--foreground)] transition hover:bg-emerald-500/10 hover:text-emerald-500"
+                className="border-b border-[#eee7dc] px-3 py-3.5 font-serif text-[17px] text-[#625d53] transition hover:text-[#9b7958]"
               >
                 {link.name}
               </Link>
             ))}
 
-            <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-2 gap-3">
               <Link
                 href="/login"
                 onClick={() => setIsOpen(false)}
-                className="rounded-xl border border-[var(--border)] px-4 py-3 text-center text-sm font-semibold text-[var(--foreground)]"
+                className="border border-[#d8c8b5] px-4 py-3 text-center text-[12px] font-semibold uppercase tracking-wider text-[#625d53] transition hover:border-[#9b7958]"
               >
                 Login
               </Link>
@@ -159,7 +155,7 @@ export default function Navbar() {
               <Link
                 href="/register"
                 onClick={() => setIsOpen(false)}
-                className="rounded-xl bg-emerald-400 px-4 py-3 text-center text-sm font-semibold text-[#06131d]"
+                className="border border-[#80674e] bg-[#80674e] px-4 py-3 text-center text-[12px] font-semibold uppercase tracking-wider text-white transition hover:bg-[#624c37]"
               >
                 Get Started
               </Link>
