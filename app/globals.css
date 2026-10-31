@@ -2,39 +2,43 @@
 @plugin "daisyui";
 
 :root {
-  color-scheme: dark;
-  --background: #06131d;
-  --foreground: #f8fafc;
-  --surface: #0c1d29;
-  --border: rgba(255, 255, 255, 0.1);
-  --muted: #94a3b8;
-  --accent: #34d399;
-}
-
-html[data-theme="light"] {
   color-scheme: light;
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #f8f5ef;
+  --foreground: #292820;
   --surface: #ffffff;
-  --border: rgba(15, 23, 42, 0.12);
-  --muted: #64748b;
-  --accent: #059669;
+  --border: #ded8cb;
+  --muted: #777367;
+  --accent: #94774f;
+  --input: #ffffff;
 }
 
-html {
-  background: var(--background);
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #171717;
+  --foreground: #f5f0e8;
+  --surface: #222222;
+  --border: #454545;
+  --muted: #b0a99d;
+  --accent: #c5a77d;
+  --input: #292929;
+}
+
+html,
+body {
+  min-height: 100%;
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
 }
 
 .theme-surface {
-  background: var(--surface);
+  background-color: var(--surface);
+  color: var(--foreground);
 }
 
 .theme-text {
@@ -47,4 +51,95 @@ body {
 
 .theme-border {
   border-color: var(--border);
+}
+
+.theme-input {
+  background-color: var(--input);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+.theme-input::placeholder {
+  color: var(--muted);
+}
+
+input,
+textarea,
+select {
+  color: var(--foreground);
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  background-color: var(--input);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: var(--muted);
+}
+
+/* BookNook Swiper Pagination */
+.booknook-hero .swiper-pagination {
+  bottom: 30px !important;
+  left: max(24px, calc((100vw - 1152px) / 2)) !important;
+  width: fit-content !important;
+}
+
+.booknook-hero .swiper-pagination-bullet {
+  width: 24px;
+  height: 3px;
+  border-radius: 0;
+  background: #fffaf0;
+  opacity: 0.45;
+  transition:
+    width 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.booknook-hero .swiper-pagination-bullet-active {
+  width: 42px;
+  opacity: 1;
+  background: #e8cda1;
+}
+
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+}
+
+:root,
+html[data-theme="light"] {
+  color-scheme: light;
+  --background: #f8f5ef;
+  --foreground: #292820;
+  --surface: #ffffff;
+  --border: #ded8cb;
+  --muted: #777367;
+  --accent: #94774f;
+  --input: #ffffff;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #171717;
+  --foreground: #f5f0e8;
+  --surface: #222222;
+  --border: #454545;
+  --muted: #b0a99d;
+  --accent: #c5a77d;
+  --input: #292929;
+}
+
+html,
+body {
+  min-height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
 }

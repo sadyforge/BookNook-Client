@@ -149,7 +149,7 @@ export default function Home() {
                       </p>
 
                       <Link
-                        href="/books"
+                        href="/all-books"
                         className="mt-9 inline-flex items-center gap-4 bg-[#e8cda1] px-7 py-4 text-sm font-semibold text-[#292820] transition hover:bg-white"
                       >
                         Browse Books
@@ -388,7 +388,7 @@ export default function Home() {
         </div>
       </section>
 
-      <style jsx global>{`
+      {/* <style jsx global>{`
         .booknook-hero .swiper-pagination {
           bottom: 30px !important;
           left: max(24px, calc((100vw - 1152px) / 2)) !important;
@@ -409,7 +409,7 @@ export default function Home() {
           opacity: 1;
           background: #e8cda1;
         }
-      `}</style>
+      `}</style> */}
     </main>
   );
 }
