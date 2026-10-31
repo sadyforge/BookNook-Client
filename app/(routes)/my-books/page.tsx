@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   BookOpen,
@@ -12,6 +12,7 @@ import {
   Plus,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import EditPage from "@/app/components/EditPage";
 
 interface Book {
   _id?: string;
@@ -31,39 +32,42 @@ const MyBookPage = () => {
 
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
-  useEffect(() => {
-    if (isPending) return;
-
+  const fetchMyBooks = useCallback(async () => {
     if (!user?.email) {
       setBooks([]);
       setLoading(false);
       return;
     }
 
-    const fetchMyBooks = async () => {
-      try {
-        const res = await fetch(
-          `http://localhost:3002/all-books/${encodeURIComponent(user.email)}`,
-          { cache: "no-store" }
-        );
+    try {
+      setLoading(true);
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch books");
-        }
+      const res = await fetch(
+        `http://localhost:3002/all-books/${encodeURIComponent(user.email)}`,
+        { cache: "no-store" }
+      );
 
-        const data = await res.json();
-
-        setBooks(Array.isArray(data) ? data : data.books ?? []);
-      } catch (error) {
-        console.error("Error fetching my books:", error);
-      } finally {
-        setLoading(false);
+      if (!res.ok) {
+        throw new Error("Failed to fetch books");
       }
-    };
+
+      const data = await res.json();
+      setBooks(Array.isArray(data) ? data : data.books ?? []);
+    } catch (error) {
+      console.error("Error fetching my books:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.email]);
+
+  useEffect(() => {
+    if (isPending) return;
 
     fetchMyBooks();
-  }, [user?.email, isPending]);
+  }, [fetchMyBooks, isPending]);
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -163,89 +167,105 @@ const MyBookPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {books.map((book, index) => (
-              <article
-                key={book._id ?? book.id ?? `${book.title}-${index}`}
-                className="group flex flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 transition duration-300 hover:-translate-y-1 hover:shadow-lg"
-              >
-                <div className="relative flex h-64 items-center justify-center overflow-hidden rounded-lg bg-[var(--background)]">
-                  {book.image ? (
-                    <img
-                      src={book.image}
-                      alt={book.title}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <BookOpen
-                      size={65}
-                      strokeWidth={1}
-                      className="text-[var(--accent)]"
-                    />
-                  )}
+            {books.map((book, index) => {
+              const bookId = book._id ?? book.id;
 
-                  <span className="absolute left-3 top-3 rounded-full bg-[var(--surface)] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--accent)] shadow-sm">
-                    {book.category}
-                  </span>
-                </div>
+              return (
+                <article
+                  key={bookId ?? `${book.title}-${index}`}
+                  className="group flex flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+                >
+                  <div className="relative flex h-64 items-center justify-center overflow-hidden rounded-lg bg-[var(--background)]">
+                    {book.image ? (
+                      <img
+                        src={book.image}
+                        alt={book.title}
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <BookOpen
+                        size={65}
+                        strokeWidth={1}
+                        className="text-[var(--accent)]"
+                      />
+                    )}
 
-                <div className="flex flex-1 flex-col px-2 pb-2 pt-4">
-                  <h3 className="line-clamp-1 font-serif text-xl font-semibold">
-                    {book.title}
-                  </h3>
+                    <span className="absolute left-3 top-3 rounded-full bg-[var(--surface)] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--accent)] shadow-sm">
+                      {book.category}
+                    </span>
+                  </div>
 
-                  <p className="mt-2 flex items-center gap-2 text-sm text-[var(--muted)]">
-                    <UserRound size={15} />
-                    {book.author}
-                  </p>
+                  <div className="flex flex-1 flex-col px-2 pb-2 pt-4">
+                    <h3 className="line-clamp-1 font-serif text-xl font-semibold">
+                      {book.title}
+                    </h3>
 
-                  {book.description && (
-                    <p className="mt-3 line-clamp-2 text-xs leading-6 text-[var(--muted)]">
-                      {book.description}
+                    <p className="mt-2 flex items-center gap-2 text-sm text-[var(--muted)]">
+                      <UserRound size={15} />
+                      {book.author}
                     </p>
-                  )}
 
-                  <div className="mt-4 flex items-center justify-between border-t border-[var(--border)] py-3">
-                    <span className="text-xs text-[var(--muted)]">
-                      {book.availableCopies ?? book.totalCopies ?? 0} /{" "}
-                      {book.totalCopies ?? 0} Copies
-                    </span>
+                    {book.description && (
+                      <p className="mt-3 line-clamp-2 text-xs leading-6 text-[var(--muted)]">
+                        {book.description}
+                      </p>
+                    )}
 
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${
-                        (book.availableCopies ?? book.totalCopies ?? 0) > 0
-                          ? "bg-emerald-500/10 text-emerald-600"
-                          : "bg-red-500/10 text-red-500"
-                      }`}
-                    >
-                      {(book.availableCopies ?? book.totalCopies ?? 0) > 0
-                        ? "Available"
-                        : "Unavailable"}
-                    </span>
+                    <div className="mt-4 flex items-center justify-between border-t border-[var(--border)] py-3">
+                      <span className="text-xs text-[var(--muted)]">
+                        {book.availableCopies ?? book.totalCopies ?? 0} /{" "}
+                        {book.totalCopies ?? 0} Copies
+                      </span>
+
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${
+                          (book.availableCopies ?? book.totalCopies ?? 0) > 0
+                            ? "bg-emerald-500/10 text-emerald-600"
+                            : "bg-red-500/10 text-red-500"
+                        }`}
+                      >
+                        {(book.availableCopies ?? book.totalCopies ?? 0) > 0
+                          ? "Available"
+                          : "Unavailable"}
+                      </span>
+                    </div>
+
+                    <div className="mt-auto grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        disabled={!bookId}
+                        onClick={() => {
+                          setSelectedBookId(bookId ?? null);
+                          setEditOpen(true);
+                        }}
+                        className="flex items-center justify-center gap-2 rounded-lg border border-[var(--accent)] px-3 py-2.5 text-xs font-semibold text-[var(--accent)] transition hover:bg-[var(--accent)] hover:text-white disabled:opacity-50"
+                      >
+                        <Pencil size={14} />
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        className="flex items-center justify-center gap-2 rounded-lg border border-red-500/50 px-3 py-2.5 text-xs font-semibold text-red-500 transition hover:bg-red-500 hover:text-white"
+                      >
+                        <Trash2 size={14} />
+                        Delete
+                      </button>
+                    </div>
                   </div>
-
-                  <div className="mt-auto grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      className="flex items-center justify-center gap-2 rounded-lg border border-[var(--accent)] px-3 py-2.5 text-xs font-semibold text-[var(--accent)] transition hover:bg-[var(--accent)] hover:text-white"
-                    >
-                      <Pencil size={14} />
-                      Edit
-                    </button>
-
-                    <button
-                      type="button"
-                      className="flex items-center justify-center gap-2 rounded-lg border border-red-500/50 px-3 py-2.5 text-xs font-semibold text-red-500 transition hover:bg-red-500 hover:text-white"
-                    >
-                      <Trash2 size={14} />
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
+
+      <EditPage
+        bookId={selectedBookId}
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        onUpdated={fetchMyBooks}
+      />
     </main>
   );
 };
