@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, type FormEvent } from "react";
@@ -17,7 +18,9 @@ export default function AddBooksPage() {
     description: "",
   });
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!user) {
@@ -25,14 +28,93 @@ export default function AddBooksPage() {
       return;
     }
 
-    const bookData = {
-      ...formData,
-      userName: user.name,
-      userEmail: user.email,
-    };
+    if (!formData.image) {
+      toast.error("Please select a book image!");
+      return;
+    }
 
-    console.log("Book Data:", bookData);
-    toast.success("Book data logged successfully!");
+    if (formData.totalCopies < 1) {
+      toast.error("Total copies must be at least 1!");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Upload image to ImgBB
+      const imageData = new FormData();
+      imageData.append("image", formData.image);
+
+      const imageRes = await fetch(
+        `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMAGE_BB}`,
+        {
+          method: "POST",
+          body: imageData,
+        }
+      );
+
+      const imageResult = await imageRes.json();
+
+      if (!imageRes.ok || !imageResult.success) {
+        throw new Error(
+          imageResult.error?.message || "Image upload failed!"
+        );
+      }
+
+      const imageUrl = imageResult.data.url;
+
+      // Prepare book data
+      const bookData = {
+        title: formData.title,
+        author: formData.author,
+        category: formData.category,
+        totalCopies: Number(formData.totalCopies),
+        availableCopies: Number(formData.totalCopies),
+        image: imageUrl,
+        description: formData.description,
+        userName: user.name,
+        userEmail: user.email,
+      };
+
+      // Save book to backend
+      const res = await fetch("http://localhost:3002/add-books", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bookData),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.message || "Failed to add book!");
+      }
+
+      toast.success("Book added successfully!");
+
+      setFormData({
+        title: "",
+        author: "",
+        category: "Fiction",
+        totalCopies: 1,
+        image: null,
+        description: "",
+      });
+
+      const imageInput = document.getElementById("image") as HTMLInputElement;
+      if (imageInput) imageInput.value = "";
+
+      console.log("Book added:", result);
+    } catch (err) {
+      console.error("Add Book Error:", err);
+
+      toast.error(
+        err instanceof Error ? err.message : "Failed to add book!"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,10 +132,7 @@ export default function AddBooksPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label
-                htmlFor="title"
-                className="mb-2 block text-sm font-medium"
-              >
+              <label htmlFor="title" className="mb-2 block text-sm font-medium">
                 Book Title
               </label>
               <input
@@ -70,10 +149,7 @@ export default function AddBooksPage() {
             </div>
 
             <div>
-              <label
-                htmlFor="author"
-                className="mb-2 block text-sm font-medium"
-              >
+              <label htmlFor="author" className="mb-2 block text-sm font-medium">
                 Author Name
               </label>
               <input
@@ -90,10 +166,7 @@ export default function AddBooksPage() {
             </div>
 
             <div>
-              <label
-                htmlFor="category"
-                className="mb-2 block text-sm font-medium"
-              >
+              <label htmlFor="category" className="mb-2 block text-sm font-medium">
                 Category
               </label>
               <select
@@ -115,10 +188,7 @@ export default function AddBooksPage() {
             </div>
 
             <div>
-              <label
-                htmlFor="totalCopies"
-                className="mb-2 block text-sm font-medium"
-              >
+              <label htmlFor="totalCopies" className="mb-2 block text-sm font-medium">
                 Total Copies
               </label>
               <input
@@ -139,10 +209,7 @@ export default function AddBooksPage() {
           </div>
 
           <div>
-            <label
-              htmlFor="image"
-              className="mb-2 block text-sm font-medium"
-            >
+            <label htmlFor="image" className="mb-2 block text-sm font-medium">
               Book Image
             </label>
             <input
@@ -161,10 +228,7 @@ export default function AddBooksPage() {
           </div>
 
           <div>
-            <label
-              htmlFor="description"
-              className="mb-2 block text-sm font-medium"
-            >
+            <label htmlFor="description" className="mb-2 block text-sm font-medium">
               Short Description
             </label>
             <textarea
@@ -185,10 +249,7 @@ export default function AddBooksPage() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label
-                htmlFor="userName"
-                className="mb-2 block text-sm font-medium"
-              >
+              <label htmlFor="userName" className="mb-2 block text-sm font-medium">
                 User Name
               </label>
               <input
@@ -202,10 +263,7 @@ export default function AddBooksPage() {
             </div>
 
             <div>
-              <label
-                htmlFor="userEmail"
-                className="mb-2 block text-sm font-medium"
-              >
+              <label htmlFor="userEmail" className="mb-2 block text-sm font-medium">
                 User Email
               </label>
               <input
@@ -221,10 +279,10 @@ export default function AddBooksPage() {
 
           <button
             type="submit"
-            disabled={!user}
+            disabled={!user || loading}
             className="w-full rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Add Book
+            {loading ? "Uploading..." : "Add Book"}
           </button>
         </form>
       </section>

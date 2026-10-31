@@ -17,6 +17,17 @@ import {
 import "swiper/css";
 import "swiper/css/pagination";
 
+interface Book {
+  _id?: string;
+  id?: string;
+  title: string;
+  author: string;
+  category: string;
+  image?: string;
+  description?: string;
+  addedDate?: string;
+}
+
 const slides = [
   {
     label: "A WORLD OF STORIES",
@@ -44,51 +55,6 @@ const slides = [
   },
 ];
 
-const books = [
-  {
-    title: "The Art of Reading",
-    author: "David L. Ulin",
-    category: "Literature",
-    image:
-      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=85",
-  },
-  {
-    title: "Stories for the Soul",
-    author: "Various Authors",
-    category: "Fiction",
-    image:
-      "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=600&q=85",
-  },
-  {
-    title: "The Quiet Library",
-    author: "M. J. Harper",
-    category: "Classic",
-    image:
-      "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=85",
-  },
-  {
-    title: "Beyond the Pages",
-    author: "Emily Carter",
-    category: "Adventure",
-    image:
-      "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=600&q=85",
-  },
-  {
-    title: "A World of Ideas",
-    author: "Thomas Reed",
-    category: "Science",
-    image:
-      "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=600&q=85",
-  },
-  {
-    title: "Letters & Memories",
-    author: "Anna Williams",
-    category: "Literature",
-    image:
-      "https://images.unsplash.com/photo-1513001900722-370f803f498d?auto=format&fit=crop&w=600&q=85",
-  },
-];
-
 const categories = [
   { name: "Fiction", count: "Stories & novels", number: "01" },
   { name: "Science", count: "Ideas & discoveries", number: "02" },
@@ -99,9 +65,45 @@ const categories = [
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
+
+    const fetchBooks = async () => {
+      try {
+        const res = await fetch("http://localhost:3002/default");
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch books");
+        }
+
+        const data = await res.json();
+
+        const defaultBooks: Book[] = Array.isArray(data)
+          ? data
+          : Array.isArray(data.books)
+            ? data.books
+            : [];
+
+        const latestBooks = [...defaultBooks]
+          .sort(
+            (a, b) =>
+              new Date(b.addedDate ?? 0).getTime() -
+              new Date(a.addedDate ?? 0).getTime()
+          )
+          .slice(0, 6);
+
+        setBooks(latestBooks);
+      } catch (error) {
+        console.error("Error fetching books:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
   }, []);
 
   return (
@@ -129,6 +131,7 @@ export default function Home() {
                     priority={index === 0}
                     sizes="100vw"
                     className="object-cover"
+                    unoptimized
                   />
 
                   <div className="absolute inset-0 bg-gradient-to-r from-[#171710]/90 via-[#171710]/65 to-[#171710]/10" />
@@ -176,22 +179,28 @@ export default function Home() {
               priority
               sizes="100vw"
               className="object-cover"
+              unoptimized
             />
+
             <div className="absolute inset-0 bg-gradient-to-r from-[#171710]/90 via-[#171710]/65 to-[#171710]/10" />
+
             <div className="relative z-10 mx-auto w-full max-w-7xl px-6 py-20 md:px-12 lg:px-16">
               <div className="max-w-2xl">
                 <p className="mb-6 flex items-center gap-3 text-xs font-semibold tracking-[0.28em] text-[#e8cda1] md:text-sm">
                   <span className="h-px w-10 bg-[#e8cda1]" />
                   {slides[0].label}
                 </p>
+
                 <h1 className="font-serif text-5xl font-medium leading-[1.12] tracking-tight text-[#fffaf0] sm:text-6xl lg:text-7xl">
                   {slides[0].title}
                 </h1>
+
                 <p className="mt-7 max-w-xl text-base leading-8 text-white/80 md:text-lg">
                   {slides[0].description}
                 </p>
+
                 <Link
-                  href="/books"
+                  href="/all-books"
                   className="mt-9 inline-flex items-center gap-4 bg-[#e8cda1] px-7 py-4 text-sm font-semibold text-[#292820] transition hover:bg-white"
                 >
                   Browse Books
@@ -243,9 +252,11 @@ export default function Home() {
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#94774f]">
               Handpicked for you
             </p>
+
             <h2 className="mt-4 font-serif text-4xl font-medium sm:text-5xl">
               New & noteworthy
             </h2>
+
             <p className="mt-4 max-w-lg text-sm leading-7 text-[#777367] md:text-base">
               Discover books that invite you to think differently, dream
               bigger, and see the world through another perspective.
@@ -262,39 +273,74 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-6 lg:gap-x-7">
-          {books.map((book) => (
-            <article key={book.title} className="group">
-              <Link href="/books" className="block">
-                <div className="relative aspect-[3/4] overflow-hidden bg-[#e9e2d6] shadow-sm">
-                  <Image
-                    src={book.image}
-                    alt={book.title}
-                    fill
-                    sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 16vw"
-                    className="object-cover transition duration-500 group-hover:scale-105"
-                  />
-                </div>
+          {loading ? (
+            <div className="col-span-full py-10 text-center text-[#777367]">
+              Loading new arrivals...
+            </div>
+          ) : books.length === 0 ? (
+            <div className="col-span-full py-10 text-center text-[#777367]">
+              No books available.
+            </div>
+          ) : (
+            books.map((book, index) => (
+              <article
+                key={book._id ?? book.id ?? `${book.title}-${index}`}
+                className="group"
+              >
+                <Link
+                  href={`/all-books/${book._id ?? book.id}`}
+                  className="block"
+                >
+                  <div className="relative aspect-[3/4] overflow-hidden bg-[#e9e2d6] shadow-sm">
+                    {book.image ? (
+                      <Image
+                        src={book.image}
+                        alt={book.title}
+                        fill
+                        sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 16vw"
+                        className="object-cover transition duration-500 group-hover:scale-105"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <BookOpen size={48} className="text-[#94774f]" />
+                      </div>
+                    )}
+                  </div>
 
-                <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#94774f]">
-                  {book.category}
-                </p>
+                  <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#94774f]">
+                    {book.category}
+                  </p>
 
-                <h3 className="mt-2 font-serif text-lg leading-snug transition group-hover:text-[#94774f]">
-                  {book.title}
-                </h3>
+                  <h3 className="mt-2 line-clamp-2 font-serif text-lg leading-snug transition group-hover:text-[#94774f]">
+                    {book.title}
+                  </h3>
 
-                <p className="mt-2 text-sm text-[#777367]">{book.author}</p>
+                  <p className="mt-2 text-sm text-[#777367]">
+                    {book.author}
+                  </p>
 
-                <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold">
-                  View details
-                  <ChevronRight
-                    size={15}
-                    className="transition-transform group-hover:translate-x-1"
-                  />
-                </span>
-              </Link>
-            </article>
-          ))}
+                  <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold">
+                    View Details
+                    <ChevronRight
+                      size={15}
+                      className="transition-transform group-hover:translate-x-1"
+                    />
+                  </span>
+                </Link>
+              </article>
+            ))
+          )}
+        </div>
+
+        <div className="mt-12 text-center">
+          <Link
+            href="/all-books"
+            className="inline-flex items-center gap-3 bg-[#292820] px-7 py-4 text-sm font-semibold text-white transition hover:bg-[#94774f]"
+          >
+            See All Books
+            <ArrowRight size={17} />
+          </Link>
         </div>
       </section>
 
@@ -305,9 +351,11 @@ export default function Home() {
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#94774f]">
                 Find your kind of story
               </p>
+
               <h2 className="mt-5 font-serif text-4xl leading-tight sm:text-5xl">
                 Every reader has a world of their own.
               </h2>
+
               <p className="mt-5 text-sm leading-7 text-[#777367] md:text-base">
                 Whether you love imaginative fiction, scientific discoveries,
                 or stories from the past, there is always something new to
@@ -315,7 +363,7 @@ export default function Home() {
               </p>
 
               <Link
-                href="/books"
+                href="/all-books"
                 className="mt-7 inline-flex items-center gap-3 bg-[#292820] px-6 py-4 text-sm font-semibold text-white transition hover:bg-[#94774f]"
               >
                 Explore the collection
@@ -327,20 +375,25 @@ export default function Home() {
               {categories.map((category) => (
                 <Link
                   key={category.name}
-                  href="/books"
+                  href="/all-books"
                   className="group flex items-center justify-between border-b border-[#cfc5b5] py-5 transition hover:px-3"
                 >
                   <div className="flex items-center gap-5">
                     <span className="text-xs text-[#94774f]">
                       {category.number}
                     </span>
+
                     <div>
-                      <h3 className="font-serif text-xl">{category.name}</h3>
+                      <h3 className="font-serif text-xl">
+                        {category.name}
+                      </h3>
+
                       <p className="mt-1 text-xs text-[#777367]">
                         {category.count}
                       </p>
                     </div>
                   </div>
+
                   <ArrowRight
                     size={18}
                     className="text-[#94774f] transition-transform group-hover:translate-x-1"
@@ -354,13 +407,14 @@ export default function Home() {
 
       <section className="mx-auto max-w-7xl px-6 py-20 md:px-12 md:py-28 lg:px-16">
         <div className="grid gap-10 md:grid-cols-2 md:items-center md:gap-16">
-          <div className="relative min-h-[360px] overflow-hidden sm:min-h-[440px]">
+          <div className="relative min-h-[360px] overflow-hidden bg-[#e9e2d6] sm:min-h-[440px]">
             <Image
               src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?auto=format&fit=crop&w=1200&q=85"
               alt="A quiet reading space"
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
+              unoptimized
             />
           </div>
 
@@ -368,17 +422,19 @@ export default function Home() {
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#94774f]">
               A little reading goes a long way
             </p>
+
             <h2 className="mt-5 font-serif text-4xl leading-tight sm:text-5xl">
               Make room for a story every day.
             </h2>
+
             <p className="mt-6 text-sm leading-8 text-[#777367] md:text-base">
-              Reading is more than turning pages. It is discovering new
-              ideas, finding moments of calm, and meeting people through
-              their stories. BookNook gives you a place to begin.
+              Reading is more than turning pages. It is discovering new ideas,
+              finding moments of calm, and meeting people through their stories.
+              BookNook gives you a place to begin.
             </p>
 
             <Link
-              href="/books"
+              href="/all-books"
               className="mt-8 inline-flex items-center gap-3 border-b border-[#94774f] pb-2 text-sm font-semibold transition hover:text-[#94774f]"
             >
               Find your next read
@@ -388,28 +444,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* <style jsx global>{`
-        .booknook-hero .swiper-pagination {
-          bottom: 30px !important;
-          left: max(24px, calc((100vw - 1152px) / 2)) !important;
-          width: fit-content !important;
-        }
-
-        .booknook-hero .swiper-pagination-bullet {
-          width: 24px;
-          height: 3px;
-          border-radius: 0;
-          background: #fffaf0;
-          opacity: 0.45;
-          transition: width 0.3s ease, opacity 0.3s ease;
-        }
-
-        .booknook-hero .swiper-pagination-bullet-active {
-          width: 42px;
-          opacity: 1;
-          background: #e8cda1;
-        }
-      `}</style> */}
+   
     </main>
   );
 }

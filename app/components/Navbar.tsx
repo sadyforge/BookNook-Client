@@ -18,7 +18,7 @@ import toast from "react-hot-toast";
 
 const publicLinks = [
   { name: "Home", href: "/" },
-  { name: "All Books", href: "/books" },
+  { name: "All Books", href: "/all-books" },
 ];
 
 const privateLinks = [
