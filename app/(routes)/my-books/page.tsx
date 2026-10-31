@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import EditPage from "@/app/components/EditPage";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 interface Book {
   _id?: string;
@@ -27,6 +29,7 @@ interface Book {
 }
 
 const MyBookPage = () => {
+    const router=useRouter()
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
 
@@ -62,6 +65,30 @@ const MyBookPage = () => {
       setLoading(false);
     }
   }, [user?.email]);
+
+const handleDelete = async (id: string) => {
+  try {
+    const res = await fetch(`http://localhost:3002/books/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to delete book!");
+    }
+
+    toast.success("Successfully Removed Item");
+
+    setBooks((prev) =>
+      prev.filter(
+        (book) => String(book._id ?? book.id) !== String(id)
+      )
+    );
+  } catch (error) {
+    toast.error(
+      error instanceof Error ? error.message : "Failed to delete book!"
+    );
+  }
+};
 
   useEffect(() => {
     if (isPending) return;
@@ -245,6 +272,7 @@ const MyBookPage = () => {
                       </button>
 
                       <button
+                      onClick={()=>handleDelete(bookId)}
                         type="button"
                         className="flex items-center justify-center gap-2 rounded-lg border border-red-500/50 px-3 py-2.5 text-xs font-semibold text-red-500 transition hover:bg-red-500 hover:text-white"
                       >
