@@ -76,11 +76,14 @@ export default function AddBooksPage() {
         userEmail: user.email,
       };
 
+      const {data,error}=await authClient.token()
+      const token=data?.token
       // Save book to backend
       const res = await fetch("http://localhost:3002/add-books", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          authorization:`Bearer ${token}`
         },
         body: JSON.stringify(bookData),
       });

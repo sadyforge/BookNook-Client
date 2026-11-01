@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -10,6 +11,8 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
+
+
 
 interface Book {
   _id?: string;
@@ -49,12 +52,13 @@ export default function AllBooksPage() {
 
   const fetchBooks = async () => {
     setLoading(true);
-
+    const {data,error}=await authClient.token()
+    const token=data?.token
     try {
       const [allBooksRes, defaultRes] = await Promise.all([
         fetch(
           `http://localhost:3002/all-books/${encodeURIComponent(user.email)}`,
-          { cache: "no-store" }
+          {headers:{authorization:`Bearer ${token }`}, cache: "no-store" }
         ),
         fetch("http://localhost:3002/default", {
           cache: "no-store",

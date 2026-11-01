@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
@@ -59,10 +58,12 @@ export default function EditPage({
     if (!open || !bookId) return;
 
     const fetchBook = async () => {
+      const {data,error}=await authClient.token()
+      const token=data?.token
       try {
         setFetching(true);
 
-        const res = await fetch(`http://localhost:3002/books/${bookId}`);
+        const res = await fetch(`http://localhost:3002/books/${bookId}`,{headers:{authorization:`Bearer ${token}`}});
 
         if (!res.ok) {
           throw new Error("Failed to load book details!");
@@ -148,10 +149,17 @@ export default function EditPage({
         userEmail: formData.userEmail,
       };
 
+      const { data: tokenData, error } = await authClient.token();
+
+      if (error || !tokenData?.token) {
+        throw new Error("Failed to get authentication token!");
+      }
+
       const res = await fetch(`http://localhost:3002/books/${bookId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenData.token}`,
         },
         body: JSON.stringify(updateData),
       });

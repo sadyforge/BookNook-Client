@@ -6,6 +6,7 @@ import {
   use,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import type { FormEvent } from "react";
@@ -22,6 +23,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 interface Book {
   _id: string;
@@ -36,9 +38,17 @@ interface Book {
   userEmail?: string;
 }
 
+interface Borrow {
+  bookId: string;
+  userEmail: string;
+  status?: string;
+}
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
+
+const API_URL = "http://localhost:3002";
 
 function getLocalDate() {
   const date = new Date();
@@ -49,8 +59,21 @@ function getLocalDate() {
   return `${year}-${month}-${day}`;
 }
 
+function getMaxReturnDate() {
+  const date = new Date();
+  date.setDate(date.getDate() + 7);
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 function BookDetailContent({ params }: PageProps) {
   const { id } = use(params);
+
+  const router = useRouter();
 
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
@@ -61,21 +84,48 @@ function BookDetailContent({ params }: PageProps) {
   const [returnDate, setReturnDate] = useState("");
   const [borrowing, setBorrowing] = useState(false);
   const [today, setToday] = useState("");
+  const [alreadyBorrowed, setAlreadyBorrowed] = useState(false);
+  const [checkingBorrow, setCheckingBorrow] = useState(false);
+
+  const borrowLock = useRef(false);
 
   useEffect(() => {
     setToday(getLocalDate());
   }, []);
 
+  // Fetch book details
   const fetchBook = useCallback(
     async (signal?: AbortSignal) => {
       try {
+        if (isPending) return;
+
+        if (!user) {
+          router.replace("/login");
+          return;
+        }
+
+        const { data: tokenData, error } = await authClient.token();
+
+        if (error || !tokenData?.token) {
+          router.replace("/login");
+          return;
+        }
+
         const res = await fetch(
-          `http://localhost:3002/books/${encodeURIComponent(id)}`,
+          `${API_URL}/books/${encodeURIComponent(id)}`,
           {
+            headers: {
+              Authorization: `Bearer ${tokenData.token}`,
+            },
             cache: "no-store",
             signal,
           }
         );
+
+        if (res.status === 401) {
+          router.replace("/login");
+          return;
+        }
 
         if (!res.ok) {
           throw new Error(
@@ -85,8 +135,8 @@ function BookDetailContent({ params }: PageProps) {
           );
         }
 
-        const data = await res.json();
-        const bookData = data.book ?? data;
+        const responseData = await res.json();
+        const bookData = responseData.book ?? responseData;
 
         if (!bookData?._id) {
           throw new Error("Invalid book information received");
@@ -100,8 +150,13 @@ function BookDetailContent({ params }: PageProps) {
 
         console.error("Error fetching book:", error);
         setBook(null);
+
         toast.error(
-          error instanceof Error ? error.message : "Could not load book details!"
+          error instanceof TypeError
+            ? "Cannot connect to server. Check your backend!"
+            : error instanceof Error
+              ? error.message
+              : "Could not load book details!"
         );
       } finally {
         if (!signal?.aborted) {
@@ -109,29 +164,144 @@ function BookDetailContent({ params }: PageProps) {
         }
       }
     },
-    [id]
+    [id, isPending, user, router]
   );
 
   useEffect(() => {
+    if (isPending) return;
+
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
+
     const controller = new AbortController();
 
     setLoading(true);
     setBook(null);
+    setAlreadyBorrowed(false);
 
     fetchBook(controller.signal);
 
     return () => {
       controller.abort();
     };
-  }, [fetchBook]);
+  }, [fetchBook, isPending, user, router]);
 
+  // Check if the user currently has this book
+  const checkAlreadyBorrowed = useCallback(async () => {
+    if (!user?.email || !book?._id) {
+      setAlreadyBorrowed(false);
+      return false;
+    }
+
+    setCheckingBorrow(true);
+
+    try {
+      const { data: tokenData, error } = await authClient.token();
+
+      if (error || !tokenData?.token) {
+        router.replace("/login");
+        return null;
+      }
+
+      const res = await fetch(`${API_URL}/borrow`, {
+        headers: {
+          Authorization: `Bearer ${tokenData.token}`,
+        },
+        cache: "no-store",
+      });
+
+      if (res.status === 401) {
+        router.replace("/login");
+        return null;
+      }
+
+      if (!res.ok) {
+        throw new Error("Could not check borrowing status");
+      }
+
+      const data: Borrow[] = await res.json();
+
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid borrowing information");
+      }
+
+      const borrowed = data.some(
+        (item) =>
+          item.bookId === book._id &&
+          item.userEmail === user.email &&
+          item.status !== "returned"
+      );
+
+      setAlreadyBorrowed(borrowed);
+
+      return borrowed;
+    } catch (error) {
+      console.error("Borrow check error:", error);
+
+      toast.error(
+        error instanceof TypeError
+          ? "Cannot connect to server!"
+          : error instanceof Error
+            ? error.message
+            : "Could not check borrowing status!"
+      );
+
+      return null;
+    } finally {
+      setCheckingBorrow(false);
+    }
+  }, [book?._id, user?.email, router]);
+
+  // Check borrowing status after book and session load
+  useEffect(() => {
+    if (isPending) return;
+
+    if (book?._id && user?.email) {
+      checkAlreadyBorrowed();
+    } else {
+      setAlreadyBorrowed(false);
+    }
+  }, [book?._id, user?.email, checkAlreadyBorrowed, isPending]);
+
+  // Open borrow modal
+  const handleOpenBorrowModal = async () => {
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
+
+    if (!book) return;
+
+    const availableCopies =
+      book.availableCopies ?? book.totalCopies ?? 0;
+
+    if (availableCopies <= 0) {
+      toast.error("This book is currently unavailable!");
+      return;
+    }
+
+    const borrowed = await checkAlreadyBorrowed();
+
+    if (borrowed === null) return;
+
+    if (borrowed) {
+      toast.error("You have already borrowed this book!");
+      return;
+    }
+
+    setShowModal(true);
+  };
+
+  // Borrow book
   const handleBorrow = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (borrowing) return;
+    if (borrowLock.current || borrowing) return;
 
     if (!user) {
-      toast.error("Please login to borrow this book!");
+      router.replace("/login");
       return;
     }
 
@@ -149,37 +319,61 @@ function BookDetailContent({ params }: PageProps) {
     }
 
     const currentDate = getLocalDate();
+    const maxDate = getMaxReturnDate();
 
-    if (!returnDate || returnDate <= currentDate) {
-      toast.error("Return date must be after today!");
+    if (
+      !returnDate ||
+      returnDate <= currentDate ||
+      returnDate > maxDate
+    ) {
+      toast.error("Return date must be within 7 days!");
       return;
     }
 
+    borrowLock.current = true;
     setBorrowing(true);
 
     try {
-      const tokenResponse = await authClient.token();
-      const token = tokenResponse.data?.token;
+      const borrowed = await checkAlreadyBorrowed();
 
-      if (!token) {
-        throw new Error(
-          "Authentication token not found. Please login again."
-        );
+      if (borrowed === null) return;
+
+      if (borrowed) {
+        toast.error("You have already borrowed this book!");
+        setAlreadyBorrowed(true);
+        setShowModal(false);
+        return;
       }
 
-      const res = await fetch("http://localhost:3002/borrows", {
+      const { data: tokenData, error } = await authClient.token();
+
+      if (error || !tokenData?.token) {
+        router.replace("/login");
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/borrow`, {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${tokenData.token}`,
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           bookId: book._id,
           bookTitle: book.title,
           bookImage: book.image || "",
+          borrowDate: getLocalDate(),
           returnDate,
+          userName: user.name,
+          userEmail: user.email,
+          status: "borrowed",
         }),
       });
+
+      if (res.status === 401) {
+        router.replace("/login");
+        return;
+      }
 
       const data = await res.json().catch(() => ({}));
 
@@ -189,20 +383,23 @@ function BookDetailContent({ params }: PageProps) {
 
       toast.success("Book borrowed successfully!");
 
+      setAlreadyBorrowed(true);
       setShowModal(false);
       setReturnDate("");
-      setLoading(true);
 
       await fetchBook();
     } catch (error) {
       console.error("Borrow error:", error);
 
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong!"
+        error instanceof TypeError
+          ? "Cannot connect to server!"
+          : error instanceof Error
+            ? error.message
+            : "Something went wrong!"
       );
     } finally {
+      borrowLock.current = false;
       setBorrowing(false);
     }
   };
@@ -218,10 +415,7 @@ function BookDetailContent({ params }: PageProps) {
   if (!book) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-[var(--background)] px-5 text-center text-[var(--foreground)]">
-        <BookOpen
-          size={56}
-          className="mb-4 text-[var(--accent)]"
-        />
+        <BookOpen size={56} className="mb-4 text-[var(--accent)]" />
 
         <h1 className="font-serif text-3xl font-semibold">
           Book Not Found
@@ -376,20 +570,21 @@ function BookDetailContent({ params }: PageProps) {
             </div>
 
             <button
-              onClick={() => {
-                if (!user) {
-                  toast.error("Please login to borrow this book!");
-                  return;
-                }
-
-                setShowModal(true);
-              }}
-              disabled={availableCopies <= 0}
+              onClick={handleOpenBorrowModal}
+              disabled={
+                availableCopies <= 0 ||
+                checkingBorrow ||
+                alreadyBorrowed
+              }
               className="mt-8 w-full rounded-md bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {availableCopies > 0
-                ? "Borrow This Book"
-                : "Currently Unavailable"}
+              {alreadyBorrowed
+                ? "Already Borrowed"
+                : checkingBorrow
+                  ? "Checking..."
+                  : availableCopies > 0
+                    ? "Borrow This Book"
+                    : "Currently Unavailable"}
             </button>
 
             <Link
@@ -405,9 +600,9 @@ function BookDetailContent({ params }: PageProps) {
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6">
-          <div className="w-full max-w-md rounded-lg border border-[var(--border)] bg-[var(--background)] p-6 shadow-xl">
+          <div className="w-full max-w-sm rounded-lg border border-[var(--border)] bg-[var(--background)] p-5 shadow-xl">
             <div className="flex items-center justify-between">
-              <h2 className="font-serif text-2xl font-semibold">
+              <h2 className="font-serif text-xl font-semibold">
                 Borrow This Book
               </h2>
 
@@ -417,79 +612,50 @@ function BookDetailContent({ params }: PageProps) {
                 disabled={borrowing}
                 className="rounded-md p-2 text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--foreground)] disabled:opacity-50"
               >
-                <X size={20} />
+                <X size={19} />
               </button>
             </div>
 
-            <p className="mt-2 text-sm text-[var(--muted)]">
-              Confirm your information and select a return date.
-            </p>
-
-            <form onSubmit={handleBorrow} className="mt-6 space-y-4">
+            <form onSubmit={handleBorrow} className="mt-4 space-y-3">
               <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Book Title
-                </label>
-
-                <input
-                  value={book.title}
-                  readOnly
-                  className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium">
+                <label className="mb-1.5 block text-xs font-medium">
                   Your Name
                 </label>
 
                 <input
                   value={user?.name || ""}
                   readOnly
-                  className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-sm outline-none"
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium">
+                <label className="mb-1.5 block text-xs font-medium">
                   Your Email
                 </label>
 
                 <input
                   value={user?.email || ""}
                   readOnly
-                  className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-sm outline-none"
                 />
               </div>
 
               <div>
-                <label className="mb-2 flex items-center gap-2 text-sm font-medium">
-                  <CalendarDays size={16} />
-                  Borrow Date
-                </label>
-
-                <input
-                  type="date"
-                  value={today}
-                  readOnly
-                  className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 flex items-center gap-2 text-sm font-medium">
-                  <CalendarDays size={16} />
+                <label className="mb-1.5 flex items-center gap-2 text-xs font-medium">
+                  <CalendarDays size={15} />
                   Return Date
                 </label>
 
                 <input
                   type="date"
                   min={today}
+                  max={getMaxReturnDate()}
                   value={returnDate}
                   onChange={(e) => setReturnDate(e.target.value)}
                   required
                   disabled={borrowing}
-                  className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-sm outline-none"
                 />
               </div>
 
@@ -498,9 +664,10 @@ function BookDetailContent({ params }: PageProps) {
                 disabled={
                   borrowing ||
                   !returnDate ||
-                  returnDate <= today
+                  returnDate <= today ||
+                  returnDate > getMaxReturnDate()
                 }
-                className="w-full rounded-md bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-md bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {borrowing ? "Processing..." : "Confirm Borrow"}
               </button>
@@ -509,7 +676,7 @@ function BookDetailContent({ params }: PageProps) {
                 type="button"
                 onClick={() => setShowModal(false)}
                 disabled={borrowing}
-                className="w-full rounded-md border border-[var(--border)] px-6 py-3 text-sm font-medium transition hover:bg-[var(--surface)] disabled:opacity-50"
+                className="w-full rounded-md border border-[var(--border)] px-5 py-2.5 text-sm font-medium transition hover:bg-[var(--surface)] disabled:opacity-50"
               >
                 Cancel
               </button>
