@@ -41,7 +41,7 @@ const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     });
 
     if (error) {
-        toast.error(error.message);
+        toast.error(error.message ?? "Registration failed!");
         return;
     }
 
@@ -53,15 +53,16 @@ const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
 
 
 
-const handleSignInWithGoogle = async () => {
-    const { error } = await authClient.signIn.social({
-        provider: "google",
-    });
 
-    if (error) {
-        toast.error(error.message);
-    }
-};
+const handleSignInWithGoogle=async()=>{
+     const data = await authClient.signIn.social({
+    provider: "google",
+  });
+  if(data){
+    router.push("/")
+  }
+}
+
 
 
   return (
