@@ -13,39 +13,55 @@ const RegisterPage = () => {
 const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-  const formData = new FormData(e.currentTarget);
-  const userData = Object.fromEntries(formData.entries());
+    const formData = new FormData(e.currentTarget);
+    const userData = Object.fromEntries(formData.entries());
 
-  const { data, error } = await authClient.signUp.email({
-    name: String(userData.name),
-    email: String(userData.email),
-    password: String(userData.password),
-    image: String(userData.photoURL || ""),
-  });
+    const password = String(userData.password);
 
-  if (error) {
-    console.log(error.message);
-    return;
-  }
+    if (password.length < 6) {
+        toast.error("Password must be at least 6 characters");
+        return;
+    }
 
-if(data){
-    toast.success("Successfully register User")
-    router.push("/")
-}
+    if (!/[A-Z]/.test(password)) {
+        toast.error("Password must contain an uppercase letter");
+        return;
+    }
+
+    if (!/[a-z]/.test(password)) {
+        toast.error("Password must contain a lowercase letter");
+        return;
+    }
+
+    const { data, error } = await authClient.signUp.email({
+        name: String(userData.name),
+        email: String(userData.email),
+        password,
+        image: String(userData.photoURL || ""),
+    });
+
+    if (error) {
+        toast.error(error.message);
+        return;
+    }
+
+    if (data) {
+        toast.success("Successfully registered user");
+        router.push("/login");
+    }
 };
 
 
 
+const handleSignInWithGoogle = async () => {
+    const { error } = await authClient.signIn.social({
+        provider: "google",
+    });
 
-const handleSignInWithGoogle=async()=>{
-     const data = await authClient.signIn.social({
-    provider: "google",
-  });
-  if(data){
-    router.push("/")
-  }
-}
-
+    if (error) {
+        toast.error(error.message);
+    }
+};
 
 
   return (
