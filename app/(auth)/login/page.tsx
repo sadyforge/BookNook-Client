@@ -24,7 +24,7 @@ const LoginPage = () => {
     });
 
     if (error) {
-      toast.error(error.message);
+      toast.error(error.message ?? "Login failed!");
       return;
     }
 
@@ -41,7 +41,7 @@ const LoginPage = () => {
     });
 
     if (error) {
-      toast.error(error.message);
+      toast.error(error.message ?? "Google sign-in failed!");
     }
   };
 
@@ -106,12 +106,12 @@ const LoginPage = () => {
               </div>
 
               <div className="mt-2 text-right">
-                <Link
-                  href="/forgot-password"
+                <div
+                
                   className="text-sm font-medium text-[#94774f] transition hover:text-[#292820]"
                 >
                   Forgot password?
-                </Link>
+                </div>
               </div>
             </div>
 

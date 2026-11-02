@@ -5,7 +5,7 @@ import { BookOpen, CalendarDays, RotateCcw } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 
-const API_URL = "http://localhost:3002";
+const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 interface Borrow {
   _id: string;

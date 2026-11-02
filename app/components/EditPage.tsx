@@ -63,7 +63,7 @@ export default function EditPage({
       try {
         setFetching(true);
 
-        const res = await fetch(`http://localhost:3002/books/${bookId}`,{headers:{authorization:`Bearer ${token}`}});
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/${bookId}`,{headers:{authorization:`Bearer ${token}`}});
 
         if (!res.ok) {
           throw new Error("Failed to load book details!");
@@ -155,7 +155,7 @@ export default function EditPage({
         throw new Error("Failed to get authentication token!");
       }
 
-      const res = await fetch(`http://localhost:3002/books/${bookId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/${bookId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

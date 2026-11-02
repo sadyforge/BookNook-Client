@@ -56,7 +56,7 @@ const fetchMyBooks = useCallback(async () => {
     }
 
     const res = await fetch(
-      `http://localhost:3002/all-books/${encodeURIComponent(user.email)}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/all-books/${encodeURIComponent(user.email)}`,
       {
         headers: {
           Authorization: `Bearer ${data.token}`,
@@ -82,7 +82,7 @@ const handleDelete = async (id: string) => {
   const {data,error}=await authClient.token()
   const token=data?.token
   try {
-    const res = await fetch(`http://localhost:3002/books/${id}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/${id}`, {
       method: "DELETE",
       headers:{
         authorization:`Bearer ${token}`

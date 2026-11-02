@@ -74,7 +74,7 @@ export default function Home() {
 
     const fetchBooks = async () => {
       try {
-        const res = await fetch("http://localhost:3002/default");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/default`);
 
         if (!res.ok) {
           throw new Error("Failed to fetch books");
@@ -108,344 +108,351 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="bg-[#f8f5ef] text-[#292820]">
-      <section className="relative">
-        {mounted ? (
-          <Swiper
-            modules={[Autoplay, Pagination]}
-            slidesPerView={1}
-            loop
-            autoplay={{
-              delay: 5000,
-              disableOnInteraction: false,
-            }}
-            pagination={{ clickable: true }}
-            className="booknook-hero"
-          >
-            {slides.map((slide, index) => (
-              <SwiperSlide key={slide.title}>
-                <div className="relative flex min-h-[620px] items-center overflow-hidden md:min-h-[700px]">
-                  <Image
-                    src={slide.image}
-                    alt={slide.title}
-                    fill
-                    priority={index === 0}
-                    sizes="100vw"
-                    className="object-cover"
-                    unoptimized
-                  />
 
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#171710]/90 via-[#171710]/65 to-[#171710]/10" />
+<main className="min-h-screen bg-[#f8f5ef] text-[#292820] transition-colors duration-300 dark:bg-[#171717] dark:text-[#f5f5f5]">
+  {/* Hero Banner */}
+  <section className="relative">
+    {mounted ? (
+      <Swiper
+        modules={[Autoplay, Pagination]}
+        slidesPerView={1}
+        loop
+        autoplay={{
+          delay: 5000,
+          disableOnInteraction: false,
+        }}
+        pagination={{ clickable: true }}
+        className="booknook-hero"
+      >
+        {slides.map((slide, index) => (
+          <SwiperSlide key={slide.title}>
+            <div className="relative flex min-h-[620px] items-center overflow-hidden md:min-h-[700px]">
+              <Image
+                src={slide.image}
+                alt={slide.title}
+                fill
+                priority={index === 0}
+                sizes="100vw"
+                className="object-cover"
+                unoptimized
+              />
 
-                  <div className="relative z-10 mx-auto w-full max-w-7xl px-6 pb-20 pt-16 md:px-12 lg:px-16">
-                    <div className="max-w-2xl">
-                      <p className="mb-6 flex items-center gap-3 text-xs font-semibold tracking-[0.28em] text-[#e8cda1] md:text-sm">
-                        <span className="h-px w-10 bg-[#e8cda1]" />
-                        {slide.label}
-                      </p>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#171710]/90 via-[#171710]/65 to-[#171710]/10" />
 
-                      <h1 className="font-serif text-5xl font-medium leading-[1.12] tracking-tight text-[#fffaf0] sm:text-6xl lg:text-7xl">
-                        {slide.title}
-                      </h1>
+              <div className="relative z-10 mx-auto w-full max-w-7xl px-6 pb-20 pt-16 md:px-12 lg:px-16">
+                <div className="max-w-2xl">
+                  <p className="mb-6 flex items-center gap-3 text-xs font-semibold tracking-[0.28em] text-[#e8cda1] md:text-sm">
+                    <span className="h-px w-10 bg-[#e8cda1]" />
+                    {slide.label}
+                  </p>
 
-                      <p className="mt-7 max-w-xl text-base leading-8 text-white/80 md:text-lg">
-                        {slide.description}
-                      </p>
+                  <h1 className="font-serif text-5xl font-medium leading-[1.12] tracking-tight text-[#fffaf0] sm:text-6xl lg:text-7xl">
+                    {slide.title}
+                  </h1>
 
-                      <Link
-                        href="/all-books"
-                        className="mt-9 inline-flex items-center gap-4 bg-[#e8cda1] px-7 py-4 text-sm font-semibold text-[#292820] transition hover:bg-white"
-                      >
-                        Browse Books
-                        <ArrowRight size={18} />
-                      </Link>
-                    </div>
-                  </div>
+                  <p className="mt-7 max-w-xl text-base leading-8 text-white/80 md:text-lg">
+                    {slide.description}
+                  </p>
 
-                  <div className="absolute bottom-10 right-8 z-10 hidden items-center gap-3 text-xs tracking-[0.2em] text-white/70 md:flex lg:right-16">
-                    <span>0{index + 1}</span>
-                    <span className="h-px w-12 bg-white/40" />
-                    <span>03</span>
-                  </div>
+                  <Link
+                    href="/all-books"
+                    className="mt-9 inline-flex items-center gap-4 bg-[#e8cda1] px-7 py-4 text-sm font-semibold text-[#292820] transition hover:bg-white"
+                  >
+                    Browse Books
+                    <ArrowRight size={18} />
+                  </Link>
                 </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        ) : (
-          <div className="relative flex min-h-[620px] items-center overflow-hidden bg-[#292820] md:min-h-[700px]">
-            <Image
-              src={slides[0].image}
-              alt={slides[0].title}
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover"
-              unoptimized
-            />
+              </div>
 
-            <div className="absolute inset-0 bg-gradient-to-r from-[#171710]/90 via-[#171710]/65 to-[#171710]/10" />
-
-            <div className="relative z-10 mx-auto w-full max-w-7xl px-6 py-20 md:px-12 lg:px-16">
-              <div className="max-w-2xl">
-                <p className="mb-6 flex items-center gap-3 text-xs font-semibold tracking-[0.28em] text-[#e8cda1] md:text-sm">
-                  <span className="h-px w-10 bg-[#e8cda1]" />
-                  {slides[0].label}
-                </p>
-
-                <h1 className="font-serif text-5xl font-medium leading-[1.12] tracking-tight text-[#fffaf0] sm:text-6xl lg:text-7xl">
-                  {slides[0].title}
-                </h1>
-
-                <p className="mt-7 max-w-xl text-base leading-8 text-white/80 md:text-lg">
-                  {slides[0].description}
-                </p>
-
-                <Link
-                  href="/all-books"
-                  className="mt-9 inline-flex items-center gap-4 bg-[#e8cda1] px-7 py-4 text-sm font-semibold text-[#292820] transition hover:bg-white"
-                >
-                  Browse Books
-                  <ArrowRight size={18} />
-                </Link>
+              <div className="absolute bottom-10 right-8 z-10 hidden items-center gap-3 text-xs tracking-[0.2em] text-white/70 md:flex lg:right-16">
+                <span>0{index + 1}</span>
+                <span className="h-px w-12 bg-white/40" />
+                <span>03</span>
               </div>
             </div>
-          </div>
-        )}
-      </section>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    ) : (
+      <div className="relative flex min-h-[620px] items-center overflow-hidden bg-[#292820] md:min-h-[700px]">
+        <Image
+          src={slides[0].image}
+          alt={slides[0].title}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+          unoptimized
+        />
 
-      <section className="border-b border-[#ded8cb] bg-[#f8f5ef]">
-        <div className="mx-auto grid max-w-7xl gap-8 px-6 py-12 sm:grid-cols-3 md:px-12 lg:px-16">
-          <div className="flex items-center gap-4">
-            <BookOpen className="shrink-0 text-[#94774f]" size={30} />
-            <div>
-              <h3 className="font-serif text-lg">Stories for Everyone</h3>
-              <p className="mt-1 text-sm text-[#777367]">
-                Discover your next favorite book.
-              </p>
-            </div>
-          </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#171710]/90 via-[#171710]/65 to-[#171710]/10" />
 
-          <div className="flex items-center gap-4">
-            <LibraryBig className="shrink-0 text-[#94774f]" size={30} />
-            <div>
-              <h3 className="font-serif text-lg">Your Personal Library</h3>
-              <p className="mt-1 text-sm text-[#777367]">
-                Keep your reading world organized.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <Feather className="shrink-0 text-[#94774f]" size={30} />
-            <div>
-              <h3 className="font-serif text-lg">Made for Readers</h3>
-              <p className="mt-1 text-sm text-[#777367]">
-                Find inspiration on every page.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-20 md:px-12 md:py-28 lg:px-16">
-        <div className="mb-12 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#94774f]">
-              Handpicked for you
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-6 py-20 md:px-12 lg:px-16">
+          <div className="max-w-2xl">
+            <p className="mb-6 flex items-center gap-3 text-xs font-semibold tracking-[0.28em] text-[#e8cda1] md:text-sm">
+              <span className="h-px w-10 bg-[#e8cda1]" />
+              {slides[0].label}
             </p>
 
-            <h2 className="mt-4 font-serif text-4xl font-medium sm:text-5xl">
-              New & noteworthy
-            </h2>
+            <h1 className="font-serif text-5xl font-medium leading-[1.12] tracking-tight text-[#fffaf0] sm:text-6xl lg:text-7xl">
+              {slides[0].title}
+            </h1>
 
-            <p className="mt-4 max-w-lg text-sm leading-7 text-[#777367] md:text-base">
-              Discover books that invite you to think differently, dream
-              bigger, and see the world through another perspective.
-            </p>
-          </div>
-
-          <Link
-            href="/books"
-            className="inline-flex w-fit items-center gap-2 border-b border-[#94774f] pb-2 text-sm font-semibold transition hover:text-[#94774f]"
-          >
-            Explore all books
-            <ArrowRight size={17} />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-6 lg:gap-x-7">
-          {loading ? (
-            <div className="col-span-full py-10 text-center text-[#777367]">
-              Loading new arrivals...
-            </div>
-          ) : books.length === 0 ? (
-            <div className="col-span-full py-10 text-center text-[#777367]">
-              No books available.
-            </div>
-          ) : (
-            books.map((book, index) => (
-              <article
-                key={book._id ?? book.id ?? `${book.title}-${index}`}
-                className="group"
-              >
-                <Link
-                  href={`/all-books/${book._id ?? book.id}`}
-                  className="block"
-                >
-                  <div className="relative aspect-[3/4] overflow-hidden bg-[#e9e2d6] shadow-sm">
-                    {book.image ? (
-                      <Image
-                        src={book.image}
-                        alt={book.title}
-                        fill
-                        sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 16vw"
-                        className="object-cover transition duration-500 group-hover:scale-105"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center">
-                        <BookOpen size={48} className="text-[#94774f]" />
-                      </div>
-                    )}
-                  </div>
-
-                  <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#94774f]">
-                    {book.category}
-                  </p>
-
-                  <h3 className="mt-2 line-clamp-2 font-serif text-lg leading-snug transition group-hover:text-[#94774f]">
-                    {book.title}
-                  </h3>
-
-                  <p className="mt-2 text-sm text-[#777367]">
-                    {book.author}
-                  </p>
-
-                  <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold">
-                    View Details
-                    <ChevronRight
-                      size={15}
-                      className="transition-transform group-hover:translate-x-1"
-                    />
-                  </span>
-                </Link>
-              </article>
-            ))
-          )}
-        </div>
-
-        <div className="mt-12 text-center">
-          <Link
-            href="/all-books"
-            className="inline-flex items-center gap-3 bg-[#292820] px-7 py-4 text-sm font-semibold text-white transition hover:bg-[#94774f]"
-          >
-            See All Books
-            <ArrowRight size={17} />
-          </Link>
-        </div>
-      </section>
-
-      <section className="bg-[#eae3d7]">
-        <div className="mx-auto max-w-7xl px-6 py-20 md:px-12 md:py-24 lg:px-16">
-          <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#94774f]">
-                Find your kind of story
-              </p>
-
-              <h2 className="mt-5 font-serif text-4xl leading-tight sm:text-5xl">
-                Every reader has a world of their own.
-              </h2>
-
-              <p className="mt-5 text-sm leading-7 text-[#777367] md:text-base">
-                Whether you love imaginative fiction, scientific discoveries,
-                or stories from the past, there is always something new to
-                explore.
-              </p>
-
-              <Link
-                href="/all-books"
-                className="mt-7 inline-flex items-center gap-3 bg-[#292820] px-6 py-4 text-sm font-semibold text-white transition hover:bg-[#94774f]"
-              >
-                Explore the collection
-                <ArrowRight size={17} />
-              </Link>
-            </div>
-
-            <div className="grid gap-0 sm:grid-cols-2">
-              {categories.map((category) => (
-                <Link
-                  key={category.name}
-                  href="/all-books"
-                  className="group flex items-center justify-between border-b border-[#cfc5b5] py-5 transition hover:px-3"
-                >
-                  <div className="flex items-center gap-5">
-                    <span className="text-xs text-[#94774f]">
-                      {category.number}
-                    </span>
-
-                    <div>
-                      <h3 className="font-serif text-xl">
-                        {category.name}
-                      </h3>
-
-                      <p className="mt-1 text-xs text-[#777367]">
-                        {category.count}
-                      </p>
-                    </div>
-                  </div>
-
-                  <ArrowRight
-                    size={18}
-                    className="text-[#94774f] transition-transform group-hover:translate-x-1"
-                  />
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-20 md:px-12 md:py-28 lg:px-16">
-        <div className="grid gap-10 md:grid-cols-2 md:items-center md:gap-16">
-          <div className="relative min-h-[360px] overflow-hidden bg-[#e9e2d6] sm:min-h-[440px]">
-            <Image
-              src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?auto=format&fit=crop&w=1200&q=85"
-              alt="A quiet reading space"
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover"
-              unoptimized
-            />
-          </div>
-
-          <div className="py-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#94774f]">
-              A little reading goes a long way
-            </p>
-
-            <h2 className="mt-5 font-serif text-4xl leading-tight sm:text-5xl">
-              Make room for a story every day.
-            </h2>
-
-            <p className="mt-6 text-sm leading-8 text-[#777367] md:text-base">
-              Reading is more than turning pages. It is discovering new ideas,
-              finding moments of calm, and meeting people through their stories.
-              BookNook gives you a place to begin.
+            <p className="mt-7 max-w-xl text-base leading-8 text-white/80 md:text-lg">
+              {slides[0].description}
             </p>
 
             <Link
               href="/all-books"
-              className="mt-8 inline-flex items-center gap-3 border-b border-[#94774f] pb-2 text-sm font-semibold transition hover:text-[#94774f]"
+              className="mt-9 inline-flex items-center gap-4 bg-[#e8cda1] px-7 py-4 text-sm font-semibold text-[#292820] transition hover:bg-white"
             >
-              Find your next read
-              <ArrowRight size={17} />
+              Browse Books
+              <ArrowRight size={18} />
             </Link>
           </div>
         </div>
-      </section>
+      </div>
+    )}
+  </section>
 
-   
-    </main>
+  {/* Features */}
+  <section className="border-b border-[#ded8cb] bg-[#f8f5ef] transition-colors duration-300 dark:border-[#383838] dark:bg-[#171717]">
+    <div className="mx-auto grid max-w-7xl gap-8 px-6 py-12 sm:grid-cols-3 md:px-12 lg:px-16">
+      <div className="flex items-center gap-4">
+        <BookOpen className="shrink-0 text-[#94774f]" size={30} />
+        <div>
+          <h3 className="font-serif text-lg">Stories for Everyone</h3>
+          <p className="mt-1 text-sm text-[#777367] dark:text-[#a3a3a3]">
+            Discover your next favorite book.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <LibraryBig className="shrink-0 text-[#94774f]" size={30} />
+        <div>
+          <h3 className="font-serif text-lg">Your Personal Library</h3>
+          <p className="mt-1 text-sm text-[#777367] dark:text-[#a3a3a3]">
+            Keep your reading world organized.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <Feather className="shrink-0 text-[#94774f]" size={30} />
+        <div>
+          <h3 className="font-serif text-lg">Made for Readers</h3>
+          <p className="mt-1 text-sm text-[#777367] dark:text-[#a3a3a3]">
+            Find inspiration on every page.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* Latest Books */}
+  <section className="mx-auto max-w-7xl px-6 py-20 transition-colors duration-300 md:px-12 md:py-28 lg:px-16">
+    <div className="mb-12 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#94774f]">
+          Handpicked for you
+        </p>
+
+        <h2 className="mt-4 font-serif text-4xl font-medium sm:text-5xl">
+          New & noteworthy
+        </h2>
+
+        <p className="mt-4 max-w-lg text-sm leading-7 text-[#777367] dark:text-[#a3a3a3] md:text-base">
+          Discover books that invite you to think differently, dream
+          bigger, and see the world through another perspective.
+        </p>
+      </div>
+
+      <Link
+        href="/books"
+        className="inline-flex w-fit items-center gap-2 border-b border-[#94774f] pb-2 text-sm font-semibold transition hover:text-[#94774f]"
+      >
+        Explore all books
+        <ArrowRight size={17} />
+      </Link>
+    </div>
+
+    <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-6 lg:gap-x-7">
+      {loading ? (
+        <div className="col-span-full py-10 text-center text-[#777367] dark:text-[#a3a3a3]">
+          Loading new arrivals...
+        </div>
+      ) : books.length === 0 ? (
+        <div className="col-span-full py-10 text-center text-[#777367] dark:text-[#a3a3a3]">
+          No books available.
+        </div>
+      ) : (
+        books.map((book, index) => (
+          <article
+            key={book._id ?? book.id ?? `${book.title}-${index}`}
+            className="group"
+          >
+            <Link
+              href={`/all-books/${book._id ?? book.id}`}
+              className="block"
+            >
+              <div className="relative aspect-[3/4] overflow-hidden bg-[#e9e2d6] shadow-sm dark:bg-[#292929]">
+                {book.image ? (
+                  <Image
+                    src={book.image}
+                    alt={book.title}
+                    fill
+                    sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 16vw"
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <BookOpen size={48} className="text-[#94774f]" />
+                  </div>
+                )}
+              </div>
+
+              <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#94774f]">
+                {book.category}
+              </p>
+
+              <h3 className="mt-2 line-clamp-2 font-serif text-lg leading-snug transition group-hover:text-[#94774f]">
+                {book.title}
+              </h3>
+
+              <p className="mt-2 text-sm text-[#777367] dark:text-[#a3a3a3]">
+                {book.author}
+              </p>
+
+              <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold">
+                View Details
+                <ChevronRight
+                  size={15}
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </span>
+            </Link>
+          </article>
+        ))
+      )}
+    </div>
+
+    <div className="mt-12 text-center">
+      <Link
+        href="/all-books"
+        className="inline-flex items-center gap-3 bg-[#292820] px-7 py-4 text-sm font-semibold text-white transition hover:bg-[#94774f] dark:bg-[#e8cda1] dark:text-[#292820] dark:hover:bg-white"
+      >
+        See All Books
+        <ArrowRight size={17} />
+      </Link>
+    </div>
+  </section>
+
+  {/* Categories */}
+  <section className="bg-[#eae3d7] transition-colors duration-300 dark:bg-[#222222]">
+    <div className="mx-auto max-w-7xl px-6 py-20 md:px-12 md:py-24 lg:px-16">
+      <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#94774f]">
+            Find your kind of story
+          </p>
+
+          <h2 className="mt-5 font-serif text-4xl leading-tight text-[#292820] transition-colors dark:text-[#f5f5f5] sm:text-5xl">
+            Every reader has a world of their own.
+          </h2>
+
+          <p className="mt-5 text-sm leading-7 text-[#777367] dark:text-[#a3a3a3] md:text-base">
+            Whether you love imaginative fiction, scientific discoveries,
+            or stories from the past, there is always something new to
+            explore.
+          </p>
+
+          <Link
+            href="/all-books"
+            className="mt-7 inline-flex items-center gap-3 bg-[#292820] px-6 py-4 text-sm font-semibold text-white transition hover:bg-[#94774f] dark:bg-[#e8cda1] dark:text-[#292820] dark:hover:bg-white"
+          >
+            Explore the collection
+            <ArrowRight size={17} />
+          </Link>
+        </div>
+
+        <div className="grid gap-0 sm:grid-cols-2">
+          {categories.map((category) => (
+            <Link
+              key={category.name}
+              href="/all-books"
+              className="group flex items-center justify-between border-b border-[#cfc5b5] py-5 transition hover:px-3 dark:border-[#383838]"
+            >
+              <div className="flex items-center gap-5">
+                <span className="text-xs text-[#94774f]">
+                  {category.number}
+                </span>
+
+                <div>
+                  <h3 className="font-serif text-xl text-[#292820] transition-colors dark:text-[#f5f5f5]">
+                    {category.name}
+                  </h3>
+
+                  <p className="mt-1 text-xs text-[#777367] dark:text-[#a3a3a3]">
+                    {category.count}
+                  </p>
+                </div>
+              </div>
+
+              <ArrowRight
+                size={18}
+                className="text-[#94774f] transition-transform group-hover:translate-x-1"
+              />
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* Reading Section */}
+  {/* <main className="min-h-screen bg-[#f8f5ef] text-[#292820] transition-colors duration-300 dark:bg-[#171717] dark:text-[#f5f5f5]"> */}
+  <section className="mx-auto max-w-7xl px-6 py-20 transition-colors duration-300 md:px-12 md:py-28 lg:px-16">
+    <div className="grid gap-10 md:grid-cols-2 md:items-center md:gap-16">
+      <div className="relative min-h-[360px] overflow-hidden bg-[#e9e2d6] sm:min-h-[440px]">
+        <Image
+          src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?auto=format&fit=crop&w=1200&q=85"
+          alt="A quiet reading space"
+          fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          className="object-cover"
+          unoptimized
+        />
+      </div>
+
+      <div className="py-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#94774f]">
+          A little reading goes a long way
+        </p>
+
+        <h2 className="mt-5 font-serif text-4xl leading-tight transition-colors dark:text-[#f5f5f5] sm:text-5xl">
+          Make room for a story every day.
+        </h2>
+
+        <p className="mt-6 text-sm leading-8 text-[#777367] dark:text-[#a3a3a3] md:text-base">
+          Reading is more than turning pages. It is discovering new ideas,
+          finding moments of calm, and meeting people through their stories.
+          BookNook gives you a place to begin.
+        </p>
+
+        <Link
+          href="/all-books"
+          className="mt-8 inline-flex items-center gap-3 border-b border-[#94774f] pb-2 text-sm font-semibold transition hover:text-[#94774f]"
+        >
+          Find your next read
+          <ArrowRight size={17} />
+        </Link>
+      </div>
+    </div>
+  </section>
+  {/* </main> */}
+</main>
+
   );
 }

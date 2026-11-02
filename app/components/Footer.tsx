@@ -35,27 +35,27 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="relative overflow-hidden border-t border-[#e8e0d5] bg-[#f3efe7] text-[#292720]">
+    <footer className="relative overflow-hidden border-t border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] transition-colors duration-300">
       <div className="mx-auto max-w-[1440px] px-6 pb-6 pt-16 lg:px-12">
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <Link href="/" className="inline-flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#d8c8b5] text-[#80674e]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] text-[var(--accent)]">
                 <BookOpen size={23} strokeWidth={1.5} />
               </div>
 
               <div>
                 <span className="font-serif text-2xl font-semibold tracking-tight">
-                  BookNook<span className="text-[#9b7958]">.</span>
+                  BookNook<span className="text-[var(--accent)]">.</span>
                 </span>
 
-                <p className="mt-1 text-[9px] font-medium uppercase tracking-[2.5px] text-[#827b70]">
+                <p className="mt-1 text-[9px] font-medium uppercase tracking-[2.5px] text-[var(--muted)]">
                   A world between pages
                 </p>
               </div>
             </Link>
 
-            <p className="mt-6 max-w-xs text-sm leading-7 text-[#777064]">
+            <p className="mt-6 max-w-xs text-sm leading-7 text-[var(--muted)]">
               Discover new stories, explore different worlds, and make
               reading a part of your everyday life. Your next favorite book
               is waiting for you.
@@ -67,7 +67,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Facebook"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#e0d7ca] text-[#625d53] transition hover:border-[#80674e] hover:bg-[#80674e] hover:text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent)] hover:text-white"
               >
                 <BsFacebook size={17} />
               </a>
@@ -77,7 +77,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Instagram"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#e0d7ca] text-[#625d53] transition hover:border-[#80674e] hover:bg-[#80674e] hover:text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent)] hover:text-white"
               >
                 <BsInstagram size={17} />
               </a>
@@ -87,7 +87,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="GitHub"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#e0d7ca] text-[#625d53] transition hover:border-[#80674e] hover:bg-[#80674e] hover:text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent)] hover:text-white"
               >
                 <BsGithub size={17} />
               </a>
@@ -104,9 +104,9 @@ export default function Footer() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="group flex w-fit items-center gap-2 text-sm text-[#777064] transition hover:text-[#9b7958]"
+                  className="group flex w-fit items-center gap-2 text-sm text-[var(--muted)] transition hover:text-[var(--accent)]"
                 >
-                  <span className="h-1 w-1 rounded-full bg-[#b9a58d] transition group-hover:bg-[#80674e]" />
+                  <span className="h-1 w-1 rounded-full bg-[var(--accent)] transition" />
                   {link.name}
                 </Link>
               ))}
@@ -123,7 +123,7 @@ export default function Footer() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="group flex w-fit items-center gap-2 text-sm text-[#777064] transition hover:text-[#9b7958]"
+                  className="group flex w-fit items-center gap-2 text-sm text-[var(--muted)] transition hover:text-[var(--accent)]"
                 >
                   {link.name}
 
@@ -135,12 +135,12 @@ export default function Footer() {
               ))}
             </div>
 
-            <div className="mt-7 border-l-2 border-[#9b7958] bg-[#eae3d8] p-4">
-              <p className="font-serif text-base font-semibold text-[#80674e]">
+            <div className="mt-7 border-l-2 border-[var(--accent)] bg-[var(--background)] p-4">
+              <p className="font-serif text-base font-semibold text-[var(--accent)]">
                 A little reading goes a long way.
               </p>
 
-              <p className="mt-2 text-xs leading-5 text-[#777064]">
+              <p className="mt-2 text-xs leading-5 text-[var(--muted)]">
                 Find a book today and start a new adventure.
               </p>
             </div>
@@ -153,39 +153,39 @@ export default function Footer() {
 
             <div className="mt-6 flex flex-col gap-5">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 text-[#9b7958]">
+                <div className="mt-0.5 text-[var(--accent)]">
                   <Mail size={18} strokeWidth={1.5} />
                 </div>
 
                 <div>
-                  <p className="text-xs text-[#92897c]">Email Us</p>
-                  <p className="mt-1 break-all text-sm text-[#625d53]">
+                  <p className="text-xs text-[var(--muted)]">Email Us</p>
+                  <p className="mt-1 break-all text-sm text-[var(--foreground)]">
                     hello@booknook.com
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 text-[#9b7958]">
+                <div className="mt-0.5 text-[var(--accent)]">
                   <Phone size={18} strokeWidth={1.5} />
                 </div>
 
                 <div>
-                  <p className="text-xs text-[#92897c]">Call Us</p>
-                  <p className="mt-1 text-sm text-[#625d53]">
+                  <p className="text-xs text-[var(--muted)]">Call Us</p>
+                  <p className="mt-1 text-sm text-[var(--foreground)]">
                     +880 1700-000000
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 text-[#9b7958]">
+                <div className="mt-0.5 text-[var(--accent)]">
                   <MapPin size={18} strokeWidth={1.5} />
                 </div>
 
                 <div>
-                  <p className="text-xs text-[#92897c]">Our Location</p>
-                  <p className="mt-1 text-sm text-[#625d53]">
+                  <p className="text-xs text-[var(--muted)]">Our Location</p>
+                  <p className="mt-1 text-sm text-[var(--foreground)]">
                     Bangladesh
                   </p>
                 </div>
@@ -194,17 +194,17 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-14 border-t border-[#e0d7ca] pt-6">
+        <div className="mt-14 border-t border-[var(--border)] pt-6">
           <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
-            <p className="text-xs leading-6 text-[#92897c]">
+            <p className="text-xs leading-6 text-[var(--muted)]">
               © {year ?? 2026} BookNook. All rights reserved.
             </p>
 
-            <p className="flex items-center gap-1.5 text-xs text-[#92897c]">
+            <p className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
               Made with
               <Heart
                 size={13}
-                className="fill-[#9b7958] text-[#9b7958]"
+                className="fill-[var(--accent)] text-[var(--accent)]"
               />
               for book lovers
             </p>

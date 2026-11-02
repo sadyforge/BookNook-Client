@@ -14,6 +14,7 @@ import { authClient } from "@/lib/auth-client";
 
 
 
+
 interface Book {
   _id?: string;
   id?: string;
@@ -57,10 +58,10 @@ export default function AllBooksPage() {
     try {
       const [allBooksRes, defaultRes] = await Promise.all([
         fetch(
-          `http://localhost:3002/all-books/${encodeURIComponent(user.email)}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/all-books/${encodeURIComponent(user.email)}`,
           {headers:{authorization:`Bearer ${token }`}, cache: "no-store" }
         ),
-        fetch("http://localhost:3002/default", {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/default`, {
           cache: "no-store",
         }),
       ]);

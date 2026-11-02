@@ -57,7 +57,7 @@ export default function Navbar() {
     const { error } = await authClient.signOut();
 
     if (error) {
-      toast.error(error.message);
+      toast.error(error.message ?? "Failed to log out!");
       return;
     }
 
